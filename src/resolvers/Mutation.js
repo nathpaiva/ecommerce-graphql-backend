@@ -1,8 +1,4 @@
 const Mutations = {
-  createDog(parent, args, context, info) {
-		console.log("​createDog -> args", args)
-    return args;
-  },
 
   async createItem(parent, args, context, info) {
 
@@ -13,6 +9,19 @@ const Mutations = {
     }, info);
 
     return item;
+  },
+
+  updateItem(parent, args, context, info) {
+    const updates = { ...args };
+    delete updates.id;
+    return context.db.mutation.updateItem({
+      data: updates,
+      where: {
+        id: args.id,
+      },
+    },
+      info
+    );
   }
 };
 
