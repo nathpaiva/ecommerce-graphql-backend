@@ -112,7 +112,7 @@ const Mutations = {
       data: { resetToken, resetTokenExpiry },
     });
 
-    const mailRes = await transport.sendMail({
+    await transport.sendMail({
       front: 'hello@nathpaiva.com.br',
       to: user.email,
       subject: 'Your password reset!',
