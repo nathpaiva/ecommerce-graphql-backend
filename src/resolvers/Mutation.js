@@ -17,10 +17,10 @@ const Mutations = {
     return item;
   },
 
-  updateItem(parent, args, context, info) {
+  updateItem(parent, args, ctx, info) {
     const updates = { ...args };
     delete updates.id;
-    return context.db.mutation.updateItem({
+    return ctx.db.mutation.updateItem({
       data: updates,
       where: {
         id: args.id,
@@ -30,14 +30,14 @@ const Mutations = {
     );
   },
 
-  async deleteItem(parent, args, context, info) {
+  async deleteItem(parent, args, ctx, info) {
     const where = { id: args.id };
-    const item = await context.db.query.item({ where }, `{
+    const item = await ctx.db.query.item({ where }, `{
       id
       title
     }`);
 
-    return context.db.mutation.deleteItem({ where }, info)
+    return ctx.db.mutation.deleteItem({ where }, info)
   },
 
   async signup(parent, args, ctx, info) {
