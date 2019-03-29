@@ -24,6 +24,7 @@ type Mutation {
   signout: SuccessMessage
   requestReset(email: String!): SuccessMessage
   resetPassword(resetPassword: String!, password: String!, confirmPassword: String!): User!
+  updatePermissions(permission: [Permission], userId: ID!): User
 }
 
 type Query {

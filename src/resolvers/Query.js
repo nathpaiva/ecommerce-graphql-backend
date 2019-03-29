@@ -20,10 +20,9 @@ const Query = {
       throw new Erro('You must be logged in!');
     }
 
-		console.log("TCL: users -> ctx.request", ctx.request.user)
     hasPermission(ctx.request.user, ['ADMIN', 'PERMISSIONUPDATE']);
 
-    return ctx.db.users({}, info);
+    return ctx.db.query.users({}, info);
   },
 };
 

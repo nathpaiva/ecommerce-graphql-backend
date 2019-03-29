@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
 
+const { hasPermission } = require('../utils');
 const { transport, makeNiceEmail } = require('../mail');
 
 const Mutations = {
@@ -164,10 +165,40 @@ const Mutations = {
       maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year cookie
     });
 
-
-		console.log("TCL: resetPassword -> updateUser", updateUser)
     return updateUser;
   },
+
+  async updatePermissions(parent, args, ctx, info) {
+
+    if (!ctx.request.userId) {
+      throw new Error('You must be logged in!');
+    }
+
+    const currentUser = await ctx.db.query.user(
+      {
+        where: {
+          id: ctx.request.userId,
+        },
+      },
+      info
+    );
+
+    hasPermission(currentUser, ['ADMIN', 'PERMISSIONUPDATE']);
+
+    return ctx.db.mutation.updateUser(
+      {
+        data: {
+          permission: {
+            set: args.permission,
+          },
+        },
+        where: {
+          id: args.userId,
+        },
+      },
+      info
+    );
+  }
 };
 
 module.exports = Mutations;
