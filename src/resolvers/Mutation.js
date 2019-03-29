@@ -107,7 +107,7 @@ const Mutations = {
       data: { resetToken, resetTokenExpiry },
     });
 
-    console.log(rest)
+    console.log(rest);
 
     return { message: 'Thanks!' };
   },
@@ -147,6 +147,7 @@ const Mutations = {
     });
 
 
+		console.log("TCL: resetPassword -> updateUser", updateUser)
     return updateUser;
   },
 };
