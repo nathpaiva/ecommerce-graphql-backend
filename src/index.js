@@ -18,6 +18,19 @@ server.express.use((req, res, next) => {
   next();
 });
 
+server.express.use(async (req, res, next) => {
+  if (!req.userId) return next();
+
+  const user = await db.query.user({
+    where: { id: req.userId },
+  }, '{id, permission, email, name}');
+
+  req.user = user;
+
+  // console.log("TCL: user", user)
+  next();
+});
+
 server.start(
   {
     cors: {
