@@ -15,7 +15,6 @@ const Query = {
     }, info);
   },
   async users (parent, args, ctx, info) {
-    console.log("TCL: users -> ctx.request.userId", ctx.request.userId)
     if (!ctx.request.userId) {
       throw new Erro('You must be logged in!');
     }
