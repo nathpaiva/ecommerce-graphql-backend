@@ -26,6 +26,7 @@ type Mutation {
   resetPassword(resetPassword: String!, password: String!, confirmPassword: String!): User!
   updatePermissions(permission: [Permission], userId: ID!): User
   addToCart(id: ID!): CartItem
+  removeFromCart(id: ID!): CartItem
 }
 
 type Query {
