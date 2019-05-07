@@ -5,6 +5,7 @@ const Query = {
   items: forwardTo('db'),
   item: forwardTo('db'),
   itemsConnection: forwardTo('db'),
+
   me(parent, args, ctx, info) {
     if (!ctx.request.userId) {
       return null;
@@ -14,6 +15,7 @@ const Query = {
       where: { id: ctx.request.userId },
     }, info);
   },
+
   async users (parent, args, ctx, info) {
     if (!ctx.request.userId) {
       throw new Erro('You must be logged in!');
@@ -23,6 +25,25 @@ const Query = {
 
     return ctx.db.query.users({}, info);
   },
+
+  async order (parent, args, ctx, info) {
+    if (!ctx.request.userId) {
+      throw new Erro('You must be logged in!');
+    }
+
+    const order = await ctx.db.query.order({
+      where: { id: args.id },
+    }, info);
+
+    const ownsOrder = order.user.id === ctx.request.userId;
+    const hasPermissionToSeeOrder = ctx.request.user.permissions.includes('ADMIN');
+
+    if(!ownsOrder || !hasPermissionToSeeOrder) {
+      throw new Erro('You can see this!');
+    }
+
+    return order;
+  }
 };
 
 module.exports = Query;

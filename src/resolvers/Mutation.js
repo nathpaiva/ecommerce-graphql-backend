@@ -5,6 +5,7 @@ const { promisify } = require('util');
 
 const { hasPermission } = require('../utils');
 const { transport, makeNiceEmail } = require('../mail');
+const stripe = require('../stripe');
 
 const Mutations = {
   async createItem(parent, args, ctx, info) {
@@ -266,7 +267,67 @@ const Mutations = {
         id: args.id,
       },
     }, info)
-  }
+  },
+
+  async createOrder(parent, args, ctx, info) {
+    const { userId } = ctx.request;
+
+    if (!userId) throw new Error('You must be signed in to complete this order.');
+
+    const user = await ctx.db.query.user({
+      where: { id: userId },
+    },
+    `{
+      id
+      name
+      email
+      cart {
+        id
+        quantity
+        item { title price id description image }
+      }
+    }`);
+
+    // 2. recalculate the total for the price
+    const amount = user.cart.reduce((tally, cartItem) => tally + cartItem.item.price * cartItem.quantity,0);
+    // 3. Create the stripe charge (turn token into $$$)
+    const charge = await stripe.charges.create({
+      amount,
+      currency: 'USD',
+      source: args.token,
+    });
+    // 4. Convert the CartItems to OrderItems
+    const orderItems = user.cart.map(cartItem => {
+      const orderItem = {
+        ...cartItem.item,
+        quantity: cartItem.quantity,
+        user: { connect: { id: userId } },
+      };
+      delete orderItem.id;
+      return orderItem;
+    });
+
+    // 5. create the Order
+    const order = await ctx.db.mutation.createOrder({
+      data: {
+        total: charge.amount,
+        charge: charge.id,
+        items: { create: orderItems },
+        user: { connect: { id: userId } },
+      },
+    });
+
+    // 6. Clean up - clear the users cart, delete cartItems
+    const cartItemIds = user.cart.map(cartItem => cartItem.id);
+    await ctx.db.mutation.deleteManyCartItems({
+      where: {
+        id_in: cartItemIds,
+      },
+    });
+
+    // 7. Return the Order to the client
+    return order;
+  },
 };
 
 
